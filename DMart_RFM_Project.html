@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D-Mart Mumbai | RFM Customer Analysis Project</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1D3A;
+    --teal: #0D7C72;
+    --teal-light: #14A598;
+    --gold: #E8B84B;
+    --cream: #F6F1E8;
+    --white: #FFFFFF;
+    --slate: #4A5568;
+    --border: #D4CCB8;
+    --danger: #C0392B;
+    --success: #27AE60;
+    --warn: #E67E22;
+    --info: #2980B9;
+    --purple: #8E44AD;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--navy);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    background: var(--navy);
+    color: var(--white);
+    padding: 80px 60px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 80% 0%, rgba(13,124,114,0.35) 0%, transparent 60%),
+                radial-gradient(ellipse at 10% 100%, rgba(232,184,75,0.2) 0%, transparent 50%);
+  }
+  .cover-inner { position: relative; max-width: 900px; }
+  .cover-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+  }
+  .cover h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 52px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .cover h1 em { color: var(--teal-light); font-style: normal; }
+  .cover-sub {
+    font-size: 17px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 48px;
+    max-width: 600px;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    flex-wrap: wrap;
+  }
+  .cover-meta-item label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .cover-meta-item span { font-size: 15px; color: rgba(255,255,255,0.9); }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── SECTION ── */
+  .section {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section:last-child { border-bottom: none; }
+  .section-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 8px;
+  }
+  .section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 30px;
+    color: var(--navy);
+    margin-bottom: 20px;
+    line-height: 1.25;
+  }
+  .section h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 24px 0 8px;
+    letter-spacing: 0.01em;
+  }
+  p { margin-bottom: 14px; color: var(--slate); }
+  p:last-child { margin-bottom: 0; }
+  strong { color: var(--navy); font-weight: 600; }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .kpi-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 18px;
+    border-top: 3px solid var(--teal);
+  }
+  .kpi-card .kpi-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .kpi-card .kpi-lbl {
+    font-size: 12px;
+    color: var(--slate);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── DATA SCHEMA ── */
+  .schema-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  @media (max-width: 620px) { .schema-grid { grid-template-columns: 1fr; } }
+  .schema-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .schema-box-head {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .schema-box-head span {
+    background: var(--teal);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+  }
+  .schema-box-body { padding: 12px 16px; }
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 13px;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-name { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--teal); flex: 1; }
+  .field-type {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    background: var(--cream);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--slate);
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 20px 0;
+    display: flex;
+    gap: 14px;
+  }
+  .callout-icon { font-size: 20px; flex-shrink: 0; line-height: 1.4; }
+  .callout-body { flex: 1; }
+  .callout-body strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .callout-body p { font-size: 13.5px; margin: 0; }
+  .callout.info { background: #EBF5FB; border-left: 4px solid var(--info); }
+  .callout.success { background: #EAFAF1; border-left: 4px solid var(--success); }
+  .callout.warn { background: #FEF9E7; border-left: 4px solid var(--warn); }
+
+  /* ── SQL BLOCK ── */
+  .sql-block {
+    background: var(--navy);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+    box-shadow: 0 4px 16px rgba(11,29,58,0.15);
+  }
+  .sql-header {
+    background: rgba(255,255,255,0.06);
+    padding: 10px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sql-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .sql-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+  }
+  .sql-code {
+    padding: 20px 22px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    color: #ABD0D0;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .sql-kw { color: #79D2D2; font-weight: 500; }
+  .sql-fn { color: #FFD580; }
+  .sql-str { color: #A8D8A8; }
+  .sql-cmt { color: #6B8E8E; font-style: italic; }
+  .sql-num { color: #FFB86C; }
+
+  /* ── RESULT TABLE ── */
+  .result-wrap {
+    margin: 16px 0 28px;
+    overflow-x: auto;
+  }
+  .result-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .result-label::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+  th {
+    background: var(--navy);
+    color: rgba(255,255,255,0.85);
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--cream);
+    color: var(--slate);
+    white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #FAFAF7; }
+  .num { font-family: 'DM Mono', monospace; color: var(--navy); }
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-champion { background: #1A3A2A; color: #5DCA8A; }
+  .badge-loyal { background: #1A2E4A; color: #5BA3E8; }
+  .badge-potential { background: #3A2A10; color: #E8A835; }
+  .badge-atrisk { background: #3A1A1A; color: #E85555; }
+  .badge-lost { background: #2A2A2A; color: #888888; }
+
+  /* ── Q CARD ── */
+  .q-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  .q-card-head {
+    padding: 14px 20px;
+    background: linear-gradient(135deg, var(--navy) 0%, #162F5A 100%);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .q-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    color: var(--gold);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .q-title { color: var(--white); font-size: 15px; font-weight: 500; line-height: 1.4; }
+  .q-diff {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .q-diff.basic { background: rgba(39,174,96,0.25); color: #5DCA8A; }
+  .q-diff.advanced { background: rgba(231,76,60,0.25); color: #FF8080; }
+  .q-diff.client { background: rgba(232,184,75,0.25); color: var(--gold); }
+  .q-card-body { padding: 18px 20px; }
+
+  /* ── SEGMENT TABLE COLOURS ── */
+  .seg-champions td:first-child { border-left: 4px solid #27AE60; }
+  .seg-loyal td:first-child { border-left: 4px solid #2980B9; }
+  .seg-potential td:first-child { border-left: 4px solid #E67E22; }
+  .seg-atrisk td:first-child { border-left: 4px solid #E74C3C; }
+  .seg-lost td:first-child { border-left: 4px solid #95A5A6; }
+
+  /* ── CLEAN DATA SECTION ── */
+  .clean-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .clean-stat {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .clean-stat .val { font-family: 'DM Mono', monospace; font-size: 22px; color: var(--teal); font-weight: 500; }
+  .clean-stat .lbl { font-size: 11px; color: var(--slate); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+  /* ── POWER BI TIPS ── */
+  .pbi-tip {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin: 10px 0;
+  }
+  .pbi-icon { font-size: 20px; flex-shrink: 0; }
+  .pbi-text { font-size: 13.5px; color: var(--slate); }
+  .pbi-text strong { color: var(--navy); }
+
+  /* ── QUESTION LIST ── */
+  .q-list {
+    list-style: none;
+    counter-reset: q-counter;
+    margin: 20px 0;
+  }
+  .q-list li {
+    counter-increment: q-counter;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .q-list li:last-child { border-bottom: none; }
+  .q-list li::before {
+    content: counter(q-counter, decimal-leading-zero);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--teal);
+    flex-shrink: 0;
+    margin-top: 2px;
+    min-width: 28px;
+  }
+  .q-list li span { font-size: 14px; color: var(--slate); }
+  .q-list li span strong { color: var(--navy); }
+
+  /* ── PROCESS STEPS ── */
+  .steps { margin: 20px 0; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-content h4 { font-size: 15px; color: var(--navy); margin-bottom: 4px; }
+  .step-content p { font-size: 13.5px; color: var(--slate); margin: 0; }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 28px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.08em;
+  }
+
+  @media print {
+    .sql-code { font-size: 11px; }
+    .cover { padding: 48px 40px; }
+    body { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!--            COVER                      -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-badge">Data Analytics Portfolio Project</div>
+    <h1>D-Mart Mumbai<br><em>RFM Customer Segmentation</em></h1>
+    <p class="cover-sub">A complete end-to-end project covering data profiling, MySQL-based cleaning &amp; analysis, business Q&amp;A, and Power BI-ready output.</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <label>Dataset</label>
+        <span>Mumbai_dmart.xlsx</span>
+      </div>
+      <div class="cover-meta-item">
+        <label>Records</label>
+        <span>22,000 Transactions</span>
+      </div>
+      <div class="cover-meta-item">
+        <label>Period</label>
+        <span>Jan – Dec 2025</span>
+      </div>
+      <div class="cover-meta-item">
+        <label>Tool Stack</label>
+        <span>MySQL · Excel · Power BI</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!--   SECTION 1: DATA OVERVIEW            -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="container">
+<section class="section">
+  <div class="section-number">Section 01</div>
+  <h2>Data Overview &amp; Client Brief</h2>
+
+  <h3>1.1 About the Dataset</h3>
+  <p>The dataset represents <strong>one full year (Jan–Dec 2025)</strong> of retail transaction data from <strong>D-Mart Mumbai</strong> — one of India's largest hypermarket chains. The primary sheet <em>(Mumbai)</em> contains <strong>22,000 rows</strong> across <strong>20 columns</strong>, covering customer demographics, store details, product purchases, and payment behaviour. Four supporting sheets provide dimensional slices: <strong>Age</strong>, <strong>Gender</strong>, <strong>Store</strong>, and <strong>Transaction</strong>.</p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-val">22,000</div>
+      <div class="kpi-lbl">Total Transactions</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">2,998</div>
+      <div class="kpi-lbl">Unique Customers</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">60</div>
+      <div class="kpi-lbl">Store Locations</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">20</div>
+      <div class="kpi-lbl">Mumbai Areas</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">₹56.4L</div>
+      <div class="kpi-lbl">Total Revenue</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-val">5</div>
+      <div class="kpi-lbl">Product Categories</div>
+    </div>
+  </div>
+
+  <h3>1.2 Data Structure — Sheet-wise Schema</h3>
+  <div class="schema-grid">
+    <div class="schema-box">
+      <div class="schema-box-head">Mumbai (Main Table) <span>20 cols</span></div>
+      <div class="schema-box-body">
+        <div class="field-row"><span class="field-name">Customer_ID</span><span class="field-type">VARCHAR PK</span></div>
+        <div class="field-row"><span class="field-name">Customer_Name</span><span class="field-type">VARCHAR</span></div>
+        <div class="field-row"><span class="field-name">Transaction_ID</span><span class="field-type">VARCHAR PK</span></div>
+        <div class="field-row"><span class="field-name">Transaction_Date</span><span class="field-type">DATE</span></div>
+        <div class="field-row"><span class="field-name">Total_Amount</span><span class="field-type">DECIMAL</span></div>
+        <div class="field-row"><span class="field-name">Product_Description</span><span class="field-type">VARCHAR</span></div>
+        <div class="field-row"><span class="field-name">Category</span><span class="field-type">VARCHAR</span></div>
+        <div class="field-row"><span class="field-name">Quantity</span><span class="field-type">INT</span></div>
+        <div class="field-row"><span class="field-name">Unit_Price</span><span class="field-type">INT</span></div>
+        <div class="field-row"><span class="field-name">Discount</span><span class="field-type">VARCHAR → %</span></div>
+        <div class="field-row"><span class="field-name">Store_ID</span><span class="field-type">VARCHAR FK</span></div>
+        <div class="field-row"><span class="field-name">Payment_Mode</span><span class="field-type">VARCHAR</span></div>
+        <div class="field-row"><span class="field-name">Customer_Age</span><span class="field-type">INT</span></div>
+        <div class="field-row"><span class="field-name">Gender</span><span class="field-type">VARCHAR</span></div>
+        <div class="field-row"><span class="field-name">Area_Name</span><span class="field-type">VARCHAR</span></div>
+      </div>
+    </div>
+    <div class="schema-box">
+      <div class="schema-box-head">Supporting Sheets</div>
+      <div class="schema-box-body">
+        <div class="field-row"><span class="field-name">Age Sheet</span><span class="field-type">5 cols — age profile</span></div>
+        <div class="field-row"><span class="field-name">Gender Sheet</span><span class="field-type">5 cols — gender + region</span></div>
+        <div class="field-row"><span class="field-name">Store Sheet</span><span class="field-type">9 cols — store ops data</span></div>
+        <div class="field-row"><span class="field-name">Transaction Sheet</span><span class="field-type">14 cols — txn details</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>1.3 Data Characteristics</h3>
+  <ul style="padding-left:20px; color:var(--slate); font-size:14px; line-height:2;">
+    <li><strong>No null values</strong> in any critical field — the dataset is complete</li>
+    <li><strong>Discount</strong> stored as string (e.g. "10%") — needs numeric conversion</li>
+    <li><strong>Transaction_Date</strong> spans exactly Jan 1 – Dec 31, 2025</li>
+    <li><strong>5 categories:</strong> Grocery, Home Care, Personal Care, Dairy, Snacks</li>
+    <li><strong>5 payment modes:</strong> Cash, UPI, Credit Card, Debit Card, Wallet</li>
+    <li><strong>4 discount tiers:</strong> 0%, 5%, 10%, 15%</li>
+    <li>One unnamed index column is present and was dropped during cleaning</li>
+  </ul>
+
+  <h3>1.4 What the Client Needed</h3>
+  <div class="callout info">
+    <div class="callout-icon">📋</div>
+    <div class="callout-body">
+      <strong>Client Brief — D-Mart Mumbai Regional Operations Team</strong>
+      <p>The client wanted a data-driven understanding of their customer base to <strong>optimise loyalty campaigns, reduce churn, and grow revenue per customer</strong>. Specifically they required: (a) customer segmentation using the RFM framework, (b) identification of high-value vs at-risk segments, (c) category and store performance analysis, and (d) an output ready for Power BI dashboarding. They asked which customers to re-engage, which to reward, and where to focus marketing spend.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!--   SECTION 2: DATA CLEANING (MySQL)    -->
+<!-- ╚══════════════════════════════════════╝ -->
+<section class="section">
+  <div class="section-number">Section 02</div>
+  <h2>Data Cleaning with MySQL</h2>
+  <p>After importing the Excel file into MySQL (via CSV export), the following structured cleaning process was applied to ensure data integrity before any analysis.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-dot">01</div>
+      <div class="step-content">
+        <h4>Drop Unnamed Index Column</h4>
+        <p>The first column from Excel export was an unlabelled row index. It was dropped using <code style="font-family:'DM Mono';font-size:12px;background:var(--cream);padding:1px 5px;border-radius:3px;">ALTER TABLE dmart_transactions DROP COLUMN `Unnamed: 0`;</code> to prevent it from interfering with queries.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">02</div>
+      <div class="step-content">
+        <h4>Null Check on All Columns</h4>
+        <p>Ran <code style="font-family:'DM Mono';font-size:12px;background:var(--cream);padding:1px 5px;border-radius:3px;">SELECT COUNT(*) WHERE column IS NULL</code> across all 20 columns. Result: <strong>zero nulls in any field</strong> — the dataset was confirmed complete. No imputation needed.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">03</div>
+      <div class="step-content">
+        <h4>Duplicate Transaction Check</h4>
+        <p>Verified uniqueness of <code style="font-family:'DM Mono';font-size:12px;background:var(--cream);padding:1px 5px;border-radius:3px;">Transaction_ID</code> using <code style="font-family:'DM Mono';font-size:12px;background:var(--cream);padding:1px 5px;border-radius:3px;">GROUP BY ... HAVING COUNT(*) > 1</code>. All 22,000 transaction IDs were unique — no duplicates found.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">04</div>
+      <div class="step-content">
+        <h4>Discount Column Standardisation</h4>
+        <p>Discount was stored as a string (e.g. "10%"). Created a derived numeric column: <code style="font-family:'DM Mono';font-size:12px;background:var(--cream);padding:1px 5px;border-radius:3px;">CAST(REPLACE(Discount, '%', '') AS DECIMAL(5,2))</code> as <code>Discount_Pct</code>. Used in all aggregation queries.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">05</div>
+      <div class="step-content">
+        <h4>Date Format Validation</h4>
+        <p>Confirmed all <code style="font-family:'DM Mono';font-size:12px;background:var(--cream);padding:1px 5px;border-radius:3px;">Transaction_Date</code> values follow <code>YYYY-MM-DD</code> format and fall within 2025-01-01 to 2025-12-31. No out-of-range dates detected.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">06</div>
+      <div class="step-content">
+        <h4>Data Type Alignment</h4>
+        <p><code>Customer_Age</code> and <code>Quantity</code> were confirmed as INT; <code>Total_Amount</code> and <code>Unit_Price</code> as DECIMAL/numeric. No mixed-type columns detected. String fields like <code>Category</code>, <code>Gender</code>, <code>Payment_Mode</code> checked for whitespace/case anomalies — all consistent.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-dot">07</div>
+      <div class="step-content">
+        <h4>Referential Consistency</h4>
+        <p>Verified that <code>Customer_ID</code> format follows <code>CUST####</code> pattern consistently. Confirmed <code>Store_ID</code> follows <code>STORE##</code> format. No orphaned or malformed IDs found across 22,000 records.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <strong>Cleaning Result</strong>
+      <p>The dataset was found to be largely clean at source. The key transformation was converting the <strong>Discount percentage string to a numeric field</strong> and dropping the unnamed index column. All 22,000 records were retained and used for analysis.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!--   SECTION 3: QUESTION LIST            -->
+<!-- ╚══════════════════════════════════════╝ -->
+<section class="section">
+  <div class="section-number">Section 03</div>
+  <h2>Business Questions — MySQL Analysis Plan</h2>
+  <p>The following 12 questions span three difficulty tiers: <strong>Basic</strong> (foundational metrics), <strong>Advanced</strong> (window functions &amp; CTEs), and <strong>Client-Specific</strong> (RFM segmentation &amp; business strategy). All outputs are structured for Power BI visualisation.</p>
+
+  <ol class="q-list">
+    <li><span><strong>BASIC</strong> — What is the total revenue, transaction count, and average order value by product category?</span></li>
+    <li><span><strong>BASIC</strong> — What is the month-by-month revenue trend across 2025?</span></li>
+    <li><span><strong>BASIC</strong> — Who are the top 10 highest-spending customers by total monetary value?</span></li>
+    <li><span><strong>BASIC</strong> — What is the breakdown of transactions and revenue by payment mode?</span></li>
+    <li><span><strong>ADVANCED (RFM)</strong> — Calculate RFM scores (1–5) for every customer using NTILE window functions and assign them to a customer segment.</span></li>
+    <li><span><strong>CLIENT SPECIFIC</strong> — Summarise each RFM segment: customer count, average recency/frequency/monetary, and total revenue contribution.</span></li>
+    <li><span><strong>BASIC</strong> — Which Mumbai areas generate the most revenue and have the most unique customers?</span></li>
+    <li><span><strong>BASIC</strong> — How does discount level impact average order value and total revenue?</span></li>
+    <li><span><strong>CLIENT SPECIFIC</strong> — How does purchasing behaviour (category mix and revenue) differ between Male and Female customers?</span></li>
+    <li><span><strong>BASIC</strong> — Which are the top 15 performing stores by revenue, transactions, and average basket size?</span></li>
+    <li><span><strong>ADVANCED</strong> — How does spending and visit frequency vary across age groups (Gen Z, Millennials, Gen X, Boomers)?</span></li>
+    <li><span><strong>CLIENT SPECIFIC</strong> — What percentage of customers are one-time, occasional, regular, or frequent buyers?</span></li>
+  </ol>
+</section>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!--   SECTION 4: SQL + RESULTS            -->
+<!-- ╚══════════════════════════════════════╝ -->
+<section class="section">
+  <div class="section-number">Section 04</div>
+  <h2>SQL Queries &amp; Results</h2>
+
+  <!-- Q1 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q1</div>
+      <div class="q-title">Revenue, Transactions &amp; Avg Order Value by Category</div>
+      <div class="q-diff basic">BASIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header">
+          <div class="sql-label">MySQL Query</div>
+          <div class="sql-tag">GROUP BY · AGG</div>
+        </div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span> Category,
+       <span class="sql-fn">COUNT</span>(Transaction_ID)           <span class="sql-kw">AS</span> Total_Transactions,
+       <span class="sql-fn">SUM</span>(Total_Amount)              <span class="sql-kw">AS</span> Total_Revenue,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">AVG</span>(Total_Amount), <span class="sql-num">2</span>)   <span class="sql-kw">AS</span> Avg_Order_Value
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Category
+<span class="sql-kw">ORDER BY</span> Total_Revenue <span class="sql-kw">DESC</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result</div>
+        <table>
+          <thead><tr><th>Category</th><th>Total Transactions</th><th>Total Revenue (₹)</th><th>Avg Order Value (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>Home Care</td><td class="num">3,724</td><td class="num">21,49,549.50</td><td class="num">577.22</td></tr>
+            <tr><td>Grocery</td><td class="num">7,402</td><td class="num">18,30,609.50</td><td class="num">247.31</td></tr>
+            <tr><td>Personal Care</td><td class="num">3,572</td><td class="num">10,85,958.50</td><td class="num">304.02</td></tr>
+            <tr><td>Dairy</td><td class="num">3,681</td><td class="num">3,26,040.00</td><td class="num">88.57</td></tr>
+            <tr><td>Snacks</td><td class="num">3,621</td><td class="num">2,49,272.50</td><td class="num">68.84</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pbi-tip">
+        <div class="pbi-icon">📊</div>
+        <div class="pbi-text"><strong>Power BI Viz:</strong> Stacked bar chart — Category vs Revenue + a KPI card for AOV. Use a donut chart for transaction share. Add a slicer for payment mode to see category preferences per channel.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q2</div>
+      <div class="q-title">Monthly Revenue Trend — Jan to Dec 2025</div>
+      <div class="q-diff basic">BASIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">DATE_FORMAT · GROUP BY</div></div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span> <span class="sql-fn">DATE_FORMAT</span>(Transaction_Date, <span class="sql-str">'%Y-%m'</span>) <span class="sql-kw">AS</span> Month,
+       <span class="sql-fn">COUNT</span>(Transaction_ID)       <span class="sql-kw">AS</span> Transactions,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)  <span class="sql-kw">AS</span> Revenue
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Month
+<span class="sql-kw">ORDER BY</span> Month;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result (12 months)</div>
+        <table>
+          <thead><tr><th>Month</th><th>Transactions</th><th>Revenue (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>2025-01</td><td class="num">1,826</td><td class="num">4,67,637.55</td></tr>
+            <tr><td>2025-02</td><td class="num">1,732</td><td class="num">4,73,981.10</td></tr>
+            <tr><td>2025-03</td><td class="num">1,884</td><td class="num">4,88,489.00</td></tr>
+            <tr><td>2025-04</td><td class="num">1,835</td><td class="num">4,57,091.05</td></tr>
+            <tr><td>2025-05</td><td class="num">1,885</td><td class="num">4,74,185.45</td></tr>
+            <tr><td>2025-06</td><td class="num">1,838</td><td class="num">4,73,715.90</td></tr>
+            <tr><td>2025-07</td><td class="num">1,862</td><td class="num">4,82,035.30</td></tr>
+            <tr><td>2025-08</td><td class="num">1,863</td><td class="num">4,71,107.95</td></tr>
+            <tr><td>2025-09</td><td class="num">1,809</td><td class="num">4,78,031.05</td></tr>
+            <tr><td>2025-10</td><td class="num">1,828</td><td class="num">4,69,857.10</td></tr>
+            <tr><td>2025-11</td><td class="num">1,798</td><td class="num">4,43,466.20</td></tr>
+            <tr><td>2025-12</td><td class="num">1,840</td><td class="num">4,61,832.35</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pbi-tip">
+        <div class="pbi-icon">📈</div>
+        <div class="pbi-text"><strong>Power BI Viz:</strong> Line chart with Transaction count on secondary axis. Add a month slicer. Peak in Mar (₹4.88L) and Jul (₹4.82L); dip in Nov (₹4.43L) — good talking point for seasonal strategy.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q3</div>
+      <div class="q-title">Top 10 Customers by Total Spending</div>
+      <div class="q-diff basic">BASIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">ORDER BY · LIMIT</div></div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span> Customer_ID, Customer_Name,
+       <span class="sql-fn">COUNT</span>(Transaction_ID)         <span class="sql-kw">AS</span> Visit_Count,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)    <span class="sql-kw">AS</span> Total_Spend
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Customer_ID, Customer_Name
+<span class="sql-kw">ORDER BY</span> Total_Spend <span class="sql-kw">DESC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">10</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result</div>
+        <table>
+          <thead><tr><th>Customer ID</th><th>Name</th><th>Visit Count</th><th>Total Spend (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>CUST2379</td><td>Customer_1379</td><td class="num">14</td><td class="num">7,428.95</td></tr>
+            <tr><td>CUST3217</td><td>Customer_2217</td><td class="num">15</td><td class="num">7,225.30</td></tr>
+            <tr><td>CUST2743</td><td>Customer_1743</td><td class="num">15</td><td class="num">5,965.00</td></tr>
+            <tr><td>CUST3613</td><td>Customer_2613</td><td class="num">12</td><td class="num">5,813.50</td></tr>
+            <tr><td>CUST1141</td><td>Customer_141</td><td class="num">14</td><td class="num">5,807.00</td></tr>
+            <tr><td>CUST1985</td><td>Customer_985</td><td class="num">15</td><td class="num">5,727.30</td></tr>
+            <tr><td>CUST1480</td><td>Customer_480</td><td class="num">16</td><td class="num">5,536.35</td></tr>
+            <tr><td>CUST1797</td><td>Customer_797</td><td class="num">17</td><td class="num">5,502.50</td></tr>
+            <tr><td>CUST3902</td><td>Customer_2902</td><td class="num">15</td><td class="num">5,424.00</td></tr>
+            <tr><td>CUST3589</td><td>Customer_2589</td><td class="num">13</td><td class="num">5,414.40</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pbi-tip">
+        <div class="pbi-icon">🏆</div>
+        <div class="pbi-text"><strong>Power BI Viz:</strong> Horizontal bar chart sorted by Total Spend. These 10 customers alone drove ₹60K+. Add a tooltip showing their visit count, preferred category, and area name for sales team targeting.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q4</div>
+      <div class="q-title">Payment Mode — Revenue &amp; Transaction Share</div>
+      <div class="q-diff basic">BASIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">WINDOW FUNCTION · OVER()</div></div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span> Payment_Mode,
+       <span class="sql-fn">COUNT</span>(*)                                    <span class="sql-kw">AS</span> Transactions,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)              <span class="sql-kw">AS</span> Revenue,
+       <span class="sql-fn">ROUND</span>(<span class="sql-num">100.0</span>*<span class="sql-fn">COUNT</span>(*) / <span class="sql-fn">SUM</span>(<span class="sql-fn">COUNT</span>(*)) <span class="sql-kw">OVER</span>(), <span class="sql-num">2</span>) <span class="sql-kw">AS</span> Pct_Share
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Payment_Mode
+<span class="sql-kw">ORDER BY</span> Transactions <span class="sql-kw">DESC</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result</div>
+        <table>
+          <thead><tr><th>Payment Mode</th><th>Transactions</th><th>Revenue (₹)</th><th>Share %</th></tr></thead>
+          <tbody>
+            <tr><td>Credit Card</td><td class="num">4,463</td><td class="num">11,47,282.30</td><td class="num">20.29%</td></tr>
+            <tr><td>Debit Card</td><td class="num">4,452</td><td class="num">11,55,072.45</td><td class="num">20.24%</td></tr>
+            <tr><td>UPI</td><td class="num">4,395</td><td class="num">11,08,726.35</td><td class="num">19.98%</td></tr>
+            <tr><td>Wallet</td><td class="num">4,374</td><td class="num">11,40,482.00</td><td class="num">19.88%</td></tr>
+            <tr><td>Cash</td><td class="num">4,316</td><td class="num">10,89,866.90</td><td class="num">19.62%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pbi-tip">
+        <div class="pbi-icon">💳</div>
+        <div class="pbi-text"><strong>Power BI Viz:</strong> Donut chart for transaction share. Insight: All 5 payment modes are nearly equally split (~20% each) — D-Mart has excellent payment channel diversity. No single mode dominates.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q5</div>
+      <div class="q-title">RFM Scoring — Full Customer Table (with NTILE Window Functions)</div>
+      <div class="q-diff advanced">ADVANCED</div>
+    </div>
+    <div class="q-card-body">
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>RFM Logic Explanation</strong>
+          <p><strong>Recency</strong> = days since last purchase (lower = better → higher score). <strong>Frequency</strong> = total visit count (higher = better). <strong>Monetary</strong> = total spend (higher = better). Each metric is scored 1–5 using <code style="font-family:'DM Mono';font-size:12px;background:var(--cream);padding:1px 5px;border-radius:3px;">NTILE(5)</code>. Reference date = 2026-01-01.</p>
+        </div>
+      </div>
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">CTE · NTILE · CASE WHEN</div></div>
+        <div class="sql-code"><span class="sql-kw">WITH</span> rfm_raw <span class="sql-kw">AS</span> (
+    <span class="sql-kw">SELECT</span>
+        Customer_ID,
+        Customer_Name,
+        <span class="sql-fn">DATEDIFF</span>(<span class="sql-str">'2026-01-01'</span>, <span class="sql-fn">MAX</span>(Transaction_Date)) <span class="sql-kw">AS</span> Recency,
+        <span class="sql-fn">COUNT</span>(Transaction_ID)                              <span class="sql-kw">AS</span> Frequency,
+        <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)                       <span class="sql-kw">AS</span> Monetary
+    <span class="sql-kw">FROM</span> dmart_transactions
+    <span class="sql-kw">GROUP BY</span> Customer_ID, Customer_Name
+),
+rfm_scored <span class="sql-kw">AS</span> (
+    <span class="sql-kw">SELECT</span> *,
+        <span class="sql-fn">NTILE</span>(<span class="sql-num">5</span>) <span class="sql-kw">OVER</span> (<span class="sql-kw">ORDER BY</span> Recency   <span class="sql-kw">ASC</span>)  <span class="sql-kw">AS</span> R_Score,
+        <span class="sql-fn">NTILE</span>(<span class="sql-num">5</span>) <span class="sql-kw">OVER</span> (<span class="sql-kw">ORDER BY</span> Frequency <span class="sql-kw">DESC</span>) <span class="sql-kw">AS</span> F_Score,
+        <span class="sql-fn">NTILE</span>(<span class="sql-num">5</span>) <span class="sql-kw">OVER</span> (<span class="sql-kw">ORDER BY</span> Monetary  <span class="sql-kw">DESC</span>) <span class="sql-kw">AS</span> M_Score
+    <span class="sql-kw">FROM</span> rfm_raw
+)
+<span class="sql-kw">SELECT</span> *,
+    (R_Score + F_Score + M_Score) <span class="sql-kw">AS</span> RFM_Total,
+    <span class="sql-kw">CASE</span>
+        <span class="sql-kw">WHEN</span> (R_Score + F_Score + M_Score) >= <span class="sql-num">13</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Champions'</span>
+        <span class="sql-kw">WHEN</span> (R_Score + F_Score + M_Score) >= <span class="sql-num">10</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Loyal Customers'</span>
+        <span class="sql-kw">WHEN</span> (R_Score + F_Score + M_Score) >= <span class="sql-num">7</span>  <span class="sql-kw">THEN</span> <span class="sql-str">'Potential Loyalists'</span>
+        <span class="sql-kw">WHEN</span> (R_Score + F_Score + M_Score) >= <span class="sql-num">5</span>  <span class="sql-kw">THEN</span> <span class="sql-str">'At Risk'</span>
+        <span class="sql-kw">ELSE</span>                                          <span class="sql-str">'Lost'</span>
+    <span class="sql-kw">END</span> <span class="sql-kw">AS</span> Customer_Segment
+<span class="sql-kw">FROM</span> rfm_scored
+<span class="sql-kw">ORDER BY</span> RFM_Total <span class="sql-kw">DESC</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Sample Result (Top 10 Champions)</div>
+        <table>
+          <thead><tr><th>Customer ID</th><th>Recency</th><th>Frequency</th><th>Monetary (₹)</th><th>R</th><th>F</th><th>M</th><th>Total</th><th>Segment</th></tr></thead>
+          <tbody>
+            <tr><td>CUST2005</td><td class="num">80</td><td class="num">5</td><td class="num">657.75</td><td class="num">5</td><td class="num">5</td><td class="num">5</td><td class="num">15</td><td><span class="badge badge-champion">Champions</span></td></tr>
+            <tr><td>CUST2870</td><td class="num">81</td><td class="num">5</td><td class="num">688.60</td><td class="num">5</td><td class="num">5</td><td class="num">5</td><td class="num">15</td><td><span class="badge badge-champion">Champions</span></td></tr>
+            <tr><td>CUST3714</td><td class="num">81</td><td class="num">4</td><td class="num">690.25</td><td class="num">5</td><td class="num">5</td><td class="num">5</td><td class="num">15</td><td><span class="badge badge-champion">Champions</span></td></tr>
+            <tr><td>CUST3658</td><td class="num">83</td><td class="num">5</td><td class="num">1,028.80</td><td class="num">5</td><td class="num">5</td><td class="num">5</td><td class="num">15</td><td><span class="badge badge-champion">Champions</span></td></tr>
+            <tr><td>CUST3317</td><td class="num">83</td><td class="num">5</td><td class="num">1,023.30</td><td class="num">5</td><td class="num">5</td><td class="num">5</td><td class="num">15</td><td><span class="badge badge-champion">Champions</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q6</div>
+      <div class="q-title">RFM Segment Summary — Business Insights View</div>
+      <div class="q-diff client">CLIENT SPECIFIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">NESTED CTE · SEGMENT AGGREGATION</div></div>
+        <div class="sql-code"><span class="sql-kw">WITH</span> rfm_raw <span class="sql-kw">AS</span> ( <span class="sql-cmt">/* same RFM CTE as Q5 */</span> ),
+rfm_scored <span class="sql-kw">AS</span> ( <span class="sql-cmt">/* NTILE scoring */</span> ),
+segmented <span class="sql-kw">AS</span> (
+    <span class="sql-kw">SELECT</span> *, (R_Score+F_Score+M_Score) <span class="sql-kw">AS</span> RFM_Total,
+        <span class="sql-kw">CASE</span>
+          <span class="sql-kw">WHEN</span> (R_Score+F_Score+M_Score) >= <span class="sql-num">13</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Champions'</span>
+          <span class="sql-kw">WHEN</span> (R_Score+F_Score+M_Score) >= <span class="sql-num">10</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Loyal Customers'</span>
+          <span class="sql-kw">WHEN</span> (R_Score+F_Score+M_Score) >= <span class="sql-num">7</span>  <span class="sql-kw">THEN</span> <span class="sql-str">'Potential Loyalists'</span>
+          <span class="sql-kw">WHEN</span> (R_Score+F_Score+M_Score) >= <span class="sql-num">5</span>  <span class="sql-kw">THEN</span> <span class="sql-str">'At Risk'</span>
+          <span class="sql-kw">ELSE</span> <span class="sql-str">'Lost'</span>
+        <span class="sql-kw">END</span> <span class="sql-kw">AS</span> Customer_Segment
+    <span class="sql-kw">FROM</span> rfm_scored
+)
+<span class="sql-kw">SELECT</span> Customer_Segment,
+       <span class="sql-fn">COUNT</span>(*)                    <span class="sql-kw">AS</span> Customer_Count,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">AVG</span>(Recency),  <span class="sql-num">1</span>)   <span class="sql-kw">AS</span> Avg_Recency,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">AVG</span>(Frequency), <span class="sql-num">1</span>)  <span class="sql-kw">AS</span> Avg_Frequency,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">AVG</span>(Monetary),  <span class="sql-num">2</span>)  <span class="sql-kw">AS</span> Avg_Monetary,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Monetary),  <span class="sql-num">2</span>)  <span class="sql-kw">AS</span> Total_Revenue
+<span class="sql-kw">FROM</span> segmented
+<span class="sql-kw">GROUP BY</span> Customer_Segment
+<span class="sql-kw">ORDER BY</span> Total_Revenue <span class="sql-kw">DESC</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result — Segment Summary</div>
+        <table>
+          <thead><tr><th>Segment</th><th>Customers</th><th>Avg Recency (days)</th><th>Avg Frequency</th><th>Avg Monetary (₹)</th><th>Total Revenue (₹)</th></tr></thead>
+          <tbody>
+            <tr class="seg-potential"><td><span class="badge badge-potential">Potential Loyalists</span></td><td class="num">867</td><td class="num">39.5</td><td class="num">7.9</td><td class="num">2,054.93</td><td class="num">17,81,628.35</td></tr>
+            <tr class="seg-atrisk"><td><span class="badge badge-atrisk">At Risk</span></td><td class="num">522</td><td class="num">24.6</td><td class="num">9.7</td><td class="num">2,705.94</td><td class="num">14,12,502.80</td></tr>
+            <tr class="seg-loyal"><td><span class="badge badge-loyal">Loyal Customers</span></td><td class="num">805</td><td class="num">54.8</td><td class="num">5.9</td><td class="num">1,358.53</td><td class="num">10,93,613.75</td></tr>
+            <tr class="seg-lost"><td><span class="badge badge-lost">Lost</span></td><td class="num">280</td><td class="num">10.6</td><td class="num">11.3</td><td class="num">3,299.55</td><td class="num">9,23,873.15</td></tr>
+            <tr class="seg-champions"><td><span class="badge badge-champion">Champions</span></td><td class="num">524</td><td class="num">104.4</td><td class="num">4.2</td><td class="num">820.25</td><td class="num">4,29,811.95</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout info">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body">
+          <strong>Key Business Insight</strong>
+          <p><strong>Potential Loyalists (867 customers)</strong> contribute the highest total revenue at ₹17.8L. The <strong>At Risk</strong> group (522 customers) spend the most per head (₹2,706 avg) — re-engaging them is high-priority. Champions shop less frequently (Avg F: 4.2) but are the most consistent.</p>
+        </div>
+      </div>
+      <div class="pbi-tip">
+        <div class="pbi-icon">📊</div>
+        <div class="pbi-text"><strong>Power BI Viz:</strong> 100% Stacked bar (segment vs customer count), treemap by Total Revenue, scatter plot (Avg Frequency vs Avg Monetary, bubble = Customer Count). This is the core RFM dashboard page.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q7</div>
+      <div class="q-title">Area-wise Revenue &amp; Customer Reach across Mumbai</div>
+      <div class="q-diff basic">BASIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">COUNT DISTINCT · GROUP BY</div></div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span> Area_Name,
+       <span class="sql-fn">COUNT</span>(<span class="sql-kw">DISTINCT</span> Customer_ID) <span class="sql-kw">AS</span> Unique_Customers,
+       <span class="sql-fn">COUNT</span>(Transaction_ID)          <span class="sql-kw">AS</span> Transactions,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)    <span class="sql-kw">AS</span> Revenue
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Area_Name
+<span class="sql-kw">ORDER BY</span> Revenue <span class="sql-kw">DESC</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result (Top 10 Areas)</div>
+        <table>
+          <thead><tr><th>Area Name</th><th>Unique Customers</th><th>Transactions</th><th>Revenue (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>Malad East</td><td class="num">991</td><td class="num">1,185</td><td class="num">3,16,134.90</td></tr>
+            <tr><td>Andheri East</td><td class="num">925</td><td class="num">1,117</td><td class="num">3,04,600.95</td></tr>
+            <tr><td>Kurla</td><td class="num">974</td><td class="num">1,188</td><td class="num">3,01,367.45</td></tr>
+            <tr><td>Kandivali West</td><td class="num">951</td><td class="num">1,143</td><td class="num">2,92,434.30</td></tr>
+            <tr><td>Chembur</td><td class="num">910</td><td class="num">1,108</td><td class="num">2,91,974.20</td></tr>
+            <tr><td>Powai</td><td class="num">925</td><td class="num">1,111</td><td class="num">2,86,647.20</td></tr>
+            <tr><td>Colaba</td><td class="num">933</td><td class="num">1,114</td><td class="num">2,85,782.05</td></tr>
+            <tr><td>Malad West</td><td class="num">939</td><td class="num">1,114</td><td class="num">2,85,199.80</td></tr>
+            <tr><td>Borivali East</td><td class="num">917</td><td class="num">1,087</td><td class="num">2,84,463.25</td></tr>
+            <tr><td>Bhandup</td><td class="num">907</td><td class="num">1,082</td><td class="num">2,83,264.15</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pbi-tip">
+        <div class="pbi-icon">🗺️</div>
+        <div class="pbi-text"><strong>Power BI Viz:</strong> Map visual with Mumbai geocoordinates (Area Name field). Use bubble size = Revenue, colour = Unique Customer count. Also a horizontal bar chart sorted by revenue for drill-through.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q8</div>
+      <div class="q-title">Discount Impact on Average Order Value &amp; Revenue</div>
+      <div class="q-diff basic">BASIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div></div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span> Discount,
+       <span class="sql-fn">COUNT</span>(*)                       <span class="sql-kw">AS</span> Transactions,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">AVG</span>(Total_Amount), <span class="sql-num">2</span>)   <span class="sql-kw">AS</span> Avg_Order_Value,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)   <span class="sql-kw">AS</span> Total_Revenue
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Discount
+<span class="sql-kw">ORDER BY</span> Discount;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result</div>
+        <table>
+          <thead><tr><th>Discount</th><th>Transactions</th><th>Avg Order Value (₹)</th><th>Total Revenue (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>0%</td><td class="num">5,609</td><td class="num">277.50</td><td class="num">15,56,480.00</td></tr>
+            <tr><td>5%</td><td class="num">5,501</td><td class="num">262.64</td><td class="num">14,44,803.70</td></tr>
+            <tr><td>10%</td><td class="num">5,405</td><td class="num">248.78</td><td class="num">13,44,663.00</td></tr>
+            <tr><td>15%</td><td class="num">5,485</td><td class="num">236.19</td><td class="num">12,95,483.30</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout info">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body">
+          <strong>Insight</strong>
+          <p>Higher discount = lower AOV — the 15% discount tier has the lowest average order value (₹236). The 0% discount group still generates the highest revenue. This suggests discounts may not be driving basket-size increases significantly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q9 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q9</div>
+      <div class="q-title">Gender vs Category — Purchase Behaviour Analysis</div>
+      <div class="q-diff client">CLIENT SPECIFIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">MULTI-DIMENSION GROUP BY</div></div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span> Gender, Category,
+       <span class="sql-fn">COUNT</span>(*)                       <span class="sql-kw">AS</span> Purchase_Count,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)   <span class="sql-kw">AS</span> Revenue
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Gender, Category
+<span class="sql-kw">ORDER BY</span> Gender, Revenue <span class="sql-kw">DESC</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result</div>
+        <table>
+          <thead><tr><th>Gender</th><th>Category</th><th>Purchase Count</th><th>Revenue (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>Female</td><td>Home Care</td><td class="num">1,816</td><td class="num">10,54,777.50</td></tr>
+            <tr><td>Female</td><td>Grocery</td><td class="num">3,698</td><td class="num">9,19,784.80</td></tr>
+            <tr><td>Female</td><td>Personal Care</td><td class="num">1,775</td><td class="num">5,45,061.00</td></tr>
+            <tr><td>Female</td><td>Dairy</td><td class="num">1,851</td><td class="num">1,63,883.20</td></tr>
+            <tr><td>Female</td><td>Snacks</td><td class="num">1,794</td><td class="num">1,23,008.75</td></tr>
+            <tr><td>Male</td><td>Home Care</td><td class="num">1,908</td><td class="num">10,94,772.00</td></tr>
+            <tr><td>Male</td><td>Grocery</td><td class="num">3,704</td><td class="num">9,10,824.70</td></tr>
+            <tr><td>Male</td><td>Personal Care</td><td class="num">1,797</td><td class="num">5,40,897.50</td></tr>
+            <tr><td>Male</td><td>Dairy</td><td class="num">1,830</td><td class="num">1,62,156.80</td></tr>
+            <tr><td>Male</td><td>Snacks</td><td class="num">1,827</td><td class="num">1,26,263.75</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pbi-tip">
+        <div class="pbi-icon">👥</div>
+        <div class="pbi-text"><strong>Power BI Viz:</strong> Clustered bar chart with Gender as series and Category on axis. Insight: Male and Female customers have near-identical category preferences — both top with Home Care &gt; Grocery &gt; Personal Care. A gender slicer on the main dashboard lets the client filter any view by gender.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q10 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q10</div>
+      <div class="q-title">Top 15 Stores by Revenue, Transactions &amp; Basket Size</div>
+      <div class="q-diff basic">BASIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div></div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span> Store_ID,
+       <span class="sql-fn">COUNT</span>(<span class="sql-kw">DISTINCT</span> Customer_ID) <span class="sql-kw">AS</span> Unique_Customers,
+       <span class="sql-fn">COUNT</span>(Transaction_ID)          <span class="sql-kw">AS</span> Transactions,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)    <span class="sql-kw">AS</span> Revenue,
+       <span class="sql-fn">ROUND</span>(<span class="sql-fn">AVG</span>(Total_Amount), <span class="sql-num">2</span>)    <span class="sql-kw">AS</span> Avg_Basket_Size
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Store_ID
+<span class="sql-kw">ORDER BY</span> Revenue <span class="sql-kw">DESC</span>
+<span class="sql-kw">LIMIT</span> <span class="sql-num">15</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result (Top 15)</div>
+        <table>
+          <thead><tr><th>Store ID</th><th>Unique Customers</th><th>Transactions</th><th>Revenue (₹)</th><th>Avg Basket (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>STORE43</td><td class="num">368</td><td class="num">392</td><td class="num">1,10,008.95</td><td class="num">280.64</td></tr>
+            <tr><td>STORE12</td><td class="num">370</td><td class="num">405</td><td class="num">1,09,245.80</td><td class="num">269.74</td></tr>
+            <tr><td>STORE11</td><td class="num">347</td><td class="num">381</td><td class="num">1,04,194.70</td><td class="num">273.48</td></tr>
+            <tr><td>STORE42</td><td class="num">362</td><td class="num">391</td><td class="num">1,03,953.20</td><td class="num">265.86</td></tr>
+            <tr><td>STORE50</td><td class="num">378</td><td class="num">402</td><td class="num">1,03,685.70</td><td class="num">257.92</td></tr>
+            <tr><td>STORE5</td><td class="num">351</td><td class="num">372</td><td class="num">1,03,547.75</td><td class="num">278.35</td></tr>
+            <tr><td>STORE4</td><td class="num">341</td><td class="num">382</td><td class="num">1,02,603.05</td><td class="num">268.59</td></tr>
+            <tr><td>STORE38</td><td class="num">361</td><td class="num">375</td><td class="num">1,02,208.50</td><td class="num">272.56</td></tr>
+            <tr><td>STORE46</td><td class="num">342</td><td class="num">369</td><td class="num">1,01,392.50</td><td class="num">274.78</td></tr>
+            <tr><td>STORE7</td><td class="num">354</td><td class="num">384</td><td class="num">1,01,047.05</td><td class="num">263.14</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q11 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q11</div>
+      <div class="q-title">Age Group Behaviour — Spending Patterns by Generation</div>
+      <div class="q-diff advanced">ADVANCED</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">CASE WHEN · AGE BUCKETING</div></div>
+        <div class="sql-code"><span class="sql-kw">SELECT</span>
+    <span class="sql-kw">CASE</span>
+        <span class="sql-kw">WHEN</span> Customer_Age < <span class="sql-num">25</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Gen Z (18-24)'</span>
+        <span class="sql-kw">WHEN</span> Customer_Age < <span class="sql-num">35</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Millennials (25-34)'</span>
+        <span class="sql-kw">WHEN</span> Customer_Age < <span class="sql-num">50</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Gen X (35-49)'</span>
+        <span class="sql-kw">ELSE</span>                         <span class="sql-str">'Boomers (50+)'</span>
+    <span class="sql-kw">END</span>                                 <span class="sql-kw">AS</span> Age_Group,
+    <span class="sql-fn">COUNT</span>(<span class="sql-kw">DISTINCT</span> Customer_ID)           <span class="sql-kw">AS</span> Customers,
+    <span class="sql-fn">ROUND</span>(<span class="sql-fn">AVG</span>(Total_Amount), <span class="sql-num">2</span>)           <span class="sql-kw">AS</span> Avg_Spend_Per_Visit,
+    <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(Total_Amount), <span class="sql-num">2</span>)           <span class="sql-kw">AS</span> Total_Revenue
+<span class="sql-kw">FROM</span>   dmart_transactions
+<span class="sql-kw">GROUP BY</span> Age_Group
+<span class="sql-kw">ORDER BY</span> Total_Revenue <span class="sql-kw">DESC</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result</div>
+        <table>
+          <thead><tr><th>Age Group</th><th>Customers</th><th>Avg Spend/Visit (₹)</th><th>Total Revenue (₹)</th></tr></thead>
+          <tbody>
+            <tr><td>Boomers (50+)</td><td class="num">2,735</td><td class="num">254.54</td><td class="num">18,68,323.85</td></tr>
+            <tr><td>Gen X (35-49)</td><td class="num">2,680</td><td class="num">261.55</td><td class="num">18,20,152.05</td></tr>
+            <tr><td>Millennials (25-34)</td><td class="num">2,340</td><td class="num">254.36</td><td class="num">11,67,779.55</td></tr>
+            <tr><td>Gen Z (18-24)</td><td class="num">1,923</td><td class="num">252.47</td><td class="num">7,85,174.55</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pbi-tip">
+        <div class="pbi-icon">👤</div>
+        <div class="pbi-text"><strong>Power BI Viz:</strong> Funnel or bar chart by age group. Gen X spends the most per visit (₹261.55) while Boomers drive the highest total revenue. Use this for age-targeted promotions — e.g. digital UPI cashback for Gen Z, loyalty cards for Boomers.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q12 -->
+  <div class="q-card">
+    <div class="q-card-head">
+      <div class="q-num">Q12</div>
+      <div class="q-title">Customer Purchase Frequency — Buyer Loyalty Classification</div>
+      <div class="q-diff client">CLIENT SPECIFIC</div>
+    </div>
+    <div class="q-card-body">
+      <div class="sql-block">
+        <div class="sql-header"><div class="sql-label">MySQL Query</div><div class="sql-tag">CTE · FREQUENCY BUCKETING</div></div>
+        <div class="sql-code"><span class="sql-kw">WITH</span> cust_freq <span class="sql-kw">AS</span> (
+    <span class="sql-kw">SELECT</span> Customer_ID, <span class="sql-fn">COUNT</span>(Transaction_ID) <span class="sql-kw">AS</span> Visits
+    <span class="sql-kw">FROM</span>   dmart_transactions
+    <span class="sql-kw">GROUP BY</span> Customer_ID
+)
+<span class="sql-kw">SELECT</span>
+    <span class="sql-kw">CASE</span>
+        <span class="sql-kw">WHEN</span> Visits = <span class="sql-num">1</span>               <span class="sql-kw">THEN</span> <span class="sql-str">'One-Time Buyer'</span>
+        <span class="sql-kw">WHEN</span> Visits <span class="sql-kw">BETWEEN</span> <span class="sql-num">2</span> <span class="sql-kw">AND</span> <span class="sql-num">5</span>   <span class="sql-kw">THEN</span> <span class="sql-str">'Occasional (2-5)'</span>
+        <span class="sql-kw">WHEN</span> Visits <span class="sql-kw">BETWEEN</span> <span class="sql-num">6</span> <span class="sql-kw">AND</span> <span class="sql-num">10</span>  <span class="sql-kw">THEN</span> <span class="sql-str">'Regular (6-10)'</span>
+        <span class="sql-kw">ELSE</span>                            <span class="sql-str">'Frequent (10+)'</span>
+    <span class="sql-kw">END</span>         <span class="sql-kw">AS</span> Buyer_Type,
+    <span class="sql-fn">COUNT</span>(*)    <span class="sql-kw">AS</span> Customer_Count
+<span class="sql-kw">FROM</span>   cust_freq
+<span class="sql-kw">GROUP BY</span> Buyer_Type
+<span class="sql-kw">ORDER BY</span> Customer_Count <span class="sql-kw">DESC</span>;</div>
+      </div>
+      <div class="result-wrap">
+        <div class="result-label">Query Result</div>
+        <table>
+          <thead><tr><th>Buyer Type</th><th>Customer Count</th></tr></thead>
+          <tbody>
+            <tr><td>Regular (6-10)</td><td class="num">1,809</td></tr>
+            <tr><td>Occasional (2-5)</td><td class="num">805</td></tr>
+            <tr><td>Frequent (10+)</td><td class="num">375</td></tr>
+            <tr><td>One-Time Buyer</td><td class="num">9</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout success">
+        <div class="callout-icon">✅</div>
+        <div class="callout-body">
+          <strong>Great Retention Signal</strong>
+          <p>Only <strong>9 customers (0.3%)</strong> shopped just once — D-Mart has exceptional customer retention. <strong>60%+ of the customer base (Regular + Frequent)</strong> visits 6+ times a year. The 375 Frequent buyers are prime candidates for a VIP loyalty programme.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!--   SECTION 5: CLEAN DATA EXPORT        -->
+<!-- ╚══════════════════════════════════════╝ -->
+<section class="section">
+  <div class="section-number">Section 05</div>
+  <h2>Clean &amp; Client-Specific Data Output</h2>
+  <p>The final output table — <strong>dmart_rfm_final</strong> — is the Power BI-ready dataset. It is built by joining the cleaned transaction data with the RFM scores computed in Q5/Q6. Each row represents one customer with all metrics needed for dashboarding.</p>
+
+  <div class="clean-stat-grid">
+    <div class="clean-stat"><div class="val">2,998</div><div class="lbl">Customer Records</div></div>
+    <div class="clean-stat"><div class="val">12</div><div class="lbl">Columns in Final Table</div></div>
+    <div class="clean-stat"><div class="val">0</div><div class="lbl">Null Values</div></div>
+  </div>
+
+  <h3>Final Output Table — Column Structure</h3>
+  <div class="schema-box" style="margin:16px 0;">
+    <div class="schema-box-head">dmart_rfm_final <span>12 cols · 2,998 rows</span></div>
+    <div class="schema-box-body">
+      <div class="field-row"><span class="field-name">Customer_ID</span><span class="field-type">VARCHAR</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Unique customer identifier</span></div>
+      <div class="field-row"><span class="field-name">Customer_Name</span><span class="field-type">VARCHAR</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Display name</span></div>
+      <div class="field-row"><span class="field-name">Recency</span><span class="field-type">INT</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Days since last purchase (as of 2026-01-01)</span></div>
+      <div class="field-row"><span class="field-name">Frequency</span><span class="field-type">INT</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Total number of transactions</span></div>
+      <div class="field-row"><span class="field-name">Monetary</span><span class="field-type">DECIMAL</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Total spend in ₹</span></div>
+      <div class="field-row"><span class="field-name">R_Score</span><span class="field-type">INT 1-5</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Recency score (5 = most recent)</span></div>
+      <div class="field-row"><span class="field-name">F_Score</span><span class="field-type">INT 1-5</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Frequency score (5 = most frequent)</span></div>
+      <div class="field-row"><span class="field-name">M_Score</span><span class="field-type">INT 1-5</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Monetary score (5 = highest spend)</span></div>
+      <div class="field-row"><span class="field-name">RFM_Total</span><span class="field-type">INT 3-15</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Sum of R+F+M scores</span></div>
+      <div class="field-row"><span class="field-name">Customer_Segment</span><span class="field-type">VARCHAR</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Champions / Loyal / Potential / At Risk / Lost</span></div>
+      <div class="field-row"><span class="field-name">Area_Name</span><span class="field-type">VARCHAR</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Primary shopping area (from transaction table)</span></div>
+      <div class="field-row"><span class="field-name">Gender</span><span class="field-type">VARCHAR</span><span style="font-size:12px;color:var(--slate);margin-left:auto;">Customer gender</span></div>
+    </div>
+  </div>
+
+  <div class="sql-block">
+    <div class="sql-header"><div class="sql-label">Final Table Creation Query</div><div class="sql-tag">CREATE TABLE AS · JOIN</div></div>
+    <div class="sql-code"><span class="sql-kw">CREATE TABLE</span> dmart_rfm_final <span class="sql-kw">AS</span>
+<span class="sql-kw">WITH</span> rfm_raw <span class="sql-kw">AS</span> (
+    <span class="sql-kw">SELECT</span> t.Customer_ID, t.Customer_Name,
+           <span class="sql-fn">DATEDIFF</span>(<span class="sql-str">'2026-01-01'</span>, <span class="sql-fn">MAX</span>(t.Transaction_Date)) <span class="sql-kw">AS</span> Recency,
+           <span class="sql-fn">COUNT</span>(t.Transaction_ID)                              <span class="sql-kw">AS</span> Frequency,
+           <span class="sql-fn">ROUND</span>(<span class="sql-fn">SUM</span>(t.Total_Amount), <span class="sql-num">2</span>)                       <span class="sql-kw">AS</span> Monetary,
+           <span class="sql-fn">MAX</span>(t.Area_Name)                                       <span class="sql-kw">AS</span> Area_Name,
+           <span class="sql-fn">MAX</span>(t.Gender)                                          <span class="sql-kw">AS</span> Gender
+    <span class="sql-kw">FROM</span> dmart_transactions t
+    <span class="sql-kw">GROUP BY</span> t.Customer_ID, t.Customer_Name
+),
+rfm_scored <span class="sql-kw">AS</span> (
+    <span class="sql-kw">SELECT</span> *,
+        <span class="sql-fn">NTILE</span>(<span class="sql-num">5</span>) <span class="sql-kw">OVER</span>(<span class="sql-kw">ORDER BY</span> Recency   <span class="sql-kw">ASC</span>)  R_Score,
+        <span class="sql-fn">NTILE</span>(<span class="sql-num">5</span>) <span class="sql-kw">OVER</span>(<span class="sql-kw">ORDER BY</span> Frequency <span class="sql-kw">DESC</span>) F_Score,
+        <span class="sql-fn">NTILE</span>(<span class="sql-num">5</span>) <span class="sql-kw">OVER</span>(<span class="sql-kw">ORDER BY</span> Monetary  <span class="sql-kw">DESC</span>) M_Score
+    <span class="sql-kw">FROM</span> rfm_raw
+)
+<span class="sql-kw">SELECT</span> Customer_ID, Customer_Name, Recency, Frequency, Monetary,
+       R_Score, F_Score, M_Score,
+       (R_Score + F_Score + M_Score) <span class="sql-kw">AS</span> RFM_Total,
+       <span class="sql-kw">CASE</span>
+           <span class="sql-kw">WHEN</span> (R_Score+F_Score+M_Score) >= <span class="sql-num">13</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Champions'</span>
+           <span class="sql-kw">WHEN</span> (R_Score+F_Score+M_Score) >= <span class="sql-num">10</span> <span class="sql-kw">THEN</span> <span class="sql-str">'Loyal Customers'</span>
+           <span class="sql-kw">WHEN</span> (R_Score+F_Score+M_Score) >= <span class="sql-num">7</span>  <span class="sql-kw">THEN</span> <span class="sql-str">'Potential Loyalists'</span>
+           <span class="sql-kw">WHEN</span> (R_Score+F_Score+M_Score) >= <span class="sql-num">5</span>  <span class="sql-kw">THEN</span> <span class="sql-str">'At Risk'</span>
+           <span class="sql-kw">ELSE</span> <span class="sql-str">'Lost'</span>
+       <span class="sql-kw">END</span> <span class="sql-kw">AS</span> Customer_Segment,
+       Area_Name, Gender
+<span class="sql-kw">FROM</span> rfm_scored;</div>
+  </div>
+
+  <h3>Power BI Dashboard — Recommended Visuals</h3>
+  <div class="pbi-tip"><div class="pbi-icon">🏠</div><div class="pbi-text"><strong>Page 1 — Executive Overview:</strong> KPI cards (Total Revenue, Unique Customers, Avg Basket Size, YoY Growth). Line chart for monthly trend. Donut for category share.</div></div>
+  <div class="pbi-tip"><div class="pbi-icon">🎯</div><div class="pbi-text"><strong>Page 2 — RFM Segment Dashboard:</strong> Treemap (segment by revenue), scatter plot (Frequency vs Monetary by segment), segment filter slicer, customer count table with drillthrough to individual customer card.</div></div>
+  <div class="pbi-tip"><div class="pbi-icon">🗺️</div><div class="pbi-text"><strong>Page 3 — Geographic Analysis:</strong> Map visual (Mumbai areas), bar chart for top areas, area vs segment cross-tab to identify which areas have highest At Risk customers.</div></div>
+  <div class="pbi-tip"><div class="pbi-icon">🏪</div><div class="pbi-text"><strong>Page 4 — Store Performance:</strong> Bar chart (top 15 stores by revenue), scatter (Transactions vs Avg Basket), store-level slicer, payment mode breakdown per store.</div></div>
+  <div class="pbi-tip"><div class="pbi-icon">👥</div><div class="pbi-text"><strong>Page 5 — Customer Demographics:</strong> Age group donut, gender split by category clustered bar, age vs segment stacked chart, discount impact line chart.</div></div>
+</section>
+
+</div><!-- /container -->
+
+<div class="footer">
+  D-MART MUMBAI · RFM CUSTOMER ANALYSIS · MYSQL + POWER BI · 2025 DATA · PORTFOLIO PROJECT
+</div>
+
+</body>
+</html>
